@@ -1,0 +1,104 @@
+{
+  "name": "AI Agent - Weather Station InfluxDB",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 0],
+      "id": "chat-trigger-id",
+      "name": "When chat message received",
+      "webhookId": "WEBHOOK_ID_ANONIMIZADO"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres el asistente inteligente de mi estación meteorológica personal ESP32. Tienes acceso a una herramienta que te devuelve los datos recientes de temperatura y humedad en formato de texto CSV.\n\nREGLAS VITALES PARA LEER LOS DATOS:\n1. ZONA HORARIA: El usuario te hablará siempre en hora de España (UTC+1 en invierno, UTC+2 en verano). Sin embargo, los datos de tu herramienta vienen en hora UTC. DEBES hacer la conversión.\n2. FORMATO DE HORA: La columna _time tiene el formato YYYY-MM-DDTHH:MM:SSZ. Busca guiándote por ese bloque horario.\n3. FLEXIBILIDAD: Busca el minuto más cercano disponible si no existe el exacto.\n4. MEDIAS: Traduce franjas a UTC y calcula el promedio matemático real.\n5. DATOS: Devuelve datos con un decimal.\n\nResponde de forma directa, amable y en español."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [208, 0],
+      "id": "agent-id",
+      "name": "AI Agent",
+      "notesInFlow": true,
+      "notes": "Agente encargado de consultar datos ambientales en InfluxDB y responder dudas del usuario"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [80, 208],
+      "id": "gemini-model-id",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ID_CREDENCIAL_GEMINI_OCULTO",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [224, 208],
+      "id": "memory-id",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Útil para obtener el historial de datos de Temperatura y Humedad de la estación meteorológica ESP32 de las últimas 24 horas. Los datos devueltos están en formato CSV",
+        "method": "POST",
+        "url": "http://TU_DOMINIO_O_IP:8086/api/v2/query?org=TU_ORGANIZACION",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-type",
+              "value": "application/vnd.flux"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/vnd.flux",
+        "body": "from(bucket: \"TU_BUCKET_NAME\") |> range(start: -24h) |> filter(fn: (r) => r[\"_measurement\"] == \"wifi_status\") |> filter(fn: (r) => r[\"DispositivoESP32\"] == \"ESP32\") |> filter(fn: (r) => r[\"_field\"] == \"Humedad\" or r[\"_field\"] == \"Temperatura\") |> aggregateWindow(every: 1m, fn: mean, createEmpty: false) |> yield(name: \"mean\")",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.3,
+      "position": [368, 208],
+      "id": "http-tool-id",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ID_CREDENCIAL_AUTH_OCULTO",
+          "name": "Header Auth account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": { "main": [[{ "node": "AI Agent", "type": "main", "index": 0 }]] },
+    "Google Gemini Chat Model": { "ai_languageModel": [[{ "node": "AI Agent", "type": "ai_languageModel", "index": 0 }]] },
+    "Simple Memory": { "ai_memory": [[{ "node": "AI Agent", "type": "ai_memory", "index": 0 }]] },
+    "HTTP Request": { "ai_tool": [[{ "node": "AI Agent", "type": "ai_tool", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": {
+    "instanceId": "ID_INSTANCIA_ANONIMIZADO"
+  }
+}
