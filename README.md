@@ -20,6 +20,17 @@ Este agente actúa como puente inteligente entre el usuario y los datos recolect
 - **Infraestructura de Datos (IoT):** ESP32 + Sensor DHT22 + MicroK8s.
 
 ## ⚙️ Arquitectura y Funcionamiento
+
+## 🛠️ Configuración Necesaria para el Despliegue
+Para que este flujo funcione, se deben realizar los siguientes ajustes en el archivo JSON tras importarlo a n8n:
+
+1. **Credenciales de IA:** Configurar una API Key válida de **Google Gemini** en el nodo de Chat Model.
+2. **Conexión InfluxDB:** En el nodo "HTTP Request", sustituir los placeholders por tus datos reales:
+   - `TU_DOMINIO_O_IP`: La dirección de tu servidor.
+   - `TU_ORGANIZACION`: El nombre de tu organización en InfluxDB.
+   - `TU_BUCKET_NAME`: El nombre del bucket donde se almacenan las métricas del ESP32.
+3. **Autenticación:** Configurar un Token de InfluxDB con permisos de lectura en las credenciales del nodo de Header Auth.
+
 1. **Recolección:** Un dispositivo **ESP32** envía datos de temperatura y humedad en tiempo real a una base de datos **InfluxDB** alojada en un cluster local de **MicroK8s**.
 2. **Interfaz de Chat:** El usuario interactúa mediante una interfaz de chat.
 3. **Procesamiento (n8n + Gemini):** - El agente recibe la consulta en lenguaje natural.
