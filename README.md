@@ -1,3 +1,5 @@
+![Flujo del Agente de IA](MiPrimerAgenteIA.png)
+
 # 🤖 AI Agent: Consultas Conversacionales para Estación Meteorológica IoT
 
 ![GitHub stars](https://img.shields.io/github/stars/TU_USUARIO/ai-agent-influxdb-weather?style=social)
